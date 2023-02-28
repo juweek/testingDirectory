@@ -11,103 +11,108 @@
 
 <body>
   <div class="bodyContent">
-  <h2>Percentage of Students Reaching Internetational Benchmarks</h2>
-  <p>The TIMSS achievement scale was established in 1995 based on the combined achievement distribution of all countries that participated in TIMSS 1995. To provide a point of reference for country
-    comparisons, the scale centerpoint of 500 was located at the mean of the combined achievement distribution. The units of the scale were chosen so that 100 scale score points corresponded to the standard
-    deviation of the distribution.</p>
-  <p>Ψ Reservations about reliability because the percentage of students with achievement too low for estimation exceeds 15% but does not exceed 25%.
-    See Appendix B.2 for population coverage notes 1, 2, and 3. See Appendix B.5 for sampling guidelines and sampling participation notes †, ‡, and ≡.
-    ( ) Standard errors appear in parentheses. Because of rounding some results may appear inconsistent.</p>
-  <!-- Load d3.js -->
-  <script src="https://d3js.org/d3.v4.js"></script>
+    <h2>Percentage of Students Reaching Internetational Benchmarks</h2>
+    <p>The TIMSS achievement scale was established in 1995 based on the combined achievement distribution of all
+      countries that participated in TIMSS 1995. To provide a point of reference for country
+      comparisons, the scale centerpoint of 500 was located at the mean of the combined achievement distribution. The
+      units of the scale were chosen so that 100 scale score points corresponded to the standard
+      deviation of the distribution.</p>
+    <p>Ψ Reservations about reliability because the percentage of students with achievement too low for estimation
+      exceeds 15% but does not exceed 25%.
+      See Appendix B.2 for population coverage notes 1, 2, and 3. See Appendix B.5 for sampling guidelines and sampling
+      participation notes †, ‡, and ≡.
+      ( ) Standard errors appear in parentheses. Because of rounding some results may appear inconsistent.</p>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
 
 
-  <div class="formsContainer">
-    <!-- Create the a dropdown menu that will allow you to select certain countries -->
-    <div id="searchBarSelectorContainer">
-      <input id="searchBarSelector" type="text" name="search" placeholder="Search for a country" />
-      <!-- Results container -->
-      <div id="resultsSelector"></div>
-    </div>
-    <!-- Create the a dropdown menu that will allow you to select certain countries -->
-    <div id="searchBarResultsContainer">
-      <div id="searchBarResults"></div>
-    </div>
-    <!-- Create a text search field that will be used to filter the graph 
+    <div class="formsContainer">
+      <!-- Create the a dropdown menu that will allow you to select certain countries -->
+      <div id="searchBarSelectorContainer">
+        <input id="searchBarSelector" type="text" name="search" placeholder="Search for a country" />
+        <!-- Results container -->
+        <div id="resultsSelector"></div>
+      </div>
+      <!-- Create the a dropdown menu that will allow you to select certain countries -->
+      <div id="searchBarResultsContainer">
+        <div id="searchBarResults"></div>
+      </div>
+      <!-- Create a text search field that will be used to filter the graph 
     <form action="index.html" method="GET">
       <input id="searchBar" type="text" name="search" placeholder="Search for a country" />
     </form>
      -->
-    <!-- Create a 'Sort By' dropdown that will be used to sort the graph -->
-    <select id="sortDropdown" class="dropdownMenu" placeholder="Search for country" name="sortBy">
-      <option value="Country">Sort By: Name (Alphabetical)</option>
-      <option selected value="low">Sort By: Low</option>
-      <option value="intermediate">Sort By: Intermediate</option>
-      <option value="high">Sort By: High</option>
-      <option value="advanced">Sort By: Advanced</option>
-    </select>
-    <!-- Create a 'Sort Order' dropdown that will be used to sort the graph -->
-    <select id="orderDropdown" class="dropdownMenu" name="sortOrder">
-      <option value="asc">Ascending</option>
-      <option value="desc">Descending</option>
-    </select>
-    <!-- Create the key for the graph below -->
-    <div class="modalContentGroup">
-      <div class="modal__text keyBlock">
-        <div class="keyBlockSub">
-          <div class="keyBlockYes" style="border-radius: 100px; background-color: #010101;"></div>
-          <div>Advanced</div>
+      <!-- Create a 'Sort By' dropdown that will be used to sort the graph -->
+      <select id="sortDropdown" class="dropdownMenu" placeholder="Search for country" name="sortBy">
+        <option value="Country">Sort By: Name (Alphabetical)</option>
+        <option selected value="low">Sort By: Low</option>
+        <option value="intermediate">Sort By: Intermediate</option>
+        <option value="high">Sort By: High</option>
+        <option value="advanced">Sort By: Advanced</option>
+      </select>
+      <!-- Create a 'Sort Order' dropdown that will be used to sort the graph -->
+      <select id="orderDropdown" class="dropdownMenu" name="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+      <!-- Create the key for the graph below -->
+      <div class="modalContentGroup">
+        <div class="modal__text keyBlock">
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #010101;"></div>
+            <div>Advanced</div>
+          </div>
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #fff; border: 2px solid #000;">
+            </div>
+            <div>High</div>
+          </div>
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #E85B57;"></div>
+            <div>Intermediate</div>
+          </div>
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #F2A9A4;"></div>
+            <div>Low</div>
+          </div>
         </div>
-        <div class="keyBlockSub">
-          <div class="keyBlockYes" style="border-radius: 100px; background-color: #fff; border: 2px solid #000;"></div>
-          <div>High</div>
-        </div>
-        <div class="keyBlockSub">
-          <div class="keyBlockYes" style="border-radius: 100px; background-color: #E85B57;"></div>
-          <div>Intermediate</div>
-        </div>
-        <div class="keyBlockSub">
-          <div class="keyBlockYes" style="border-radius: 100px; background-color: #F2A9A4;"></div>
-          <div>Low</div>
-        </div>
-      </div>
-      <button id="sidePanelButton">Toggle Side Panel</button>
+        <button id="sidePanelButton">Toggle Side Panel</button>
       </div>
 
-      </div>
     </div>
+  </div>
 
-    <!-- Create a graph container that will be used to place the graph -->
+  <!-- Create a graph container that will be used to place the graph -->
 
-    <!-- Create a div where the graph will take place -->
-    <div id="graphContainer">
+  <!-- Create a div where the graph will take place -->
+  <div id="graphContainer">
     <div id="my_dataviz"></div>
     <div id="datavizCopy">
       <div class="tableCountry">
-      <p>Country</p>
-      <p>Low</p>
-      <p>Inter.</p>
-      <p>High</p>
-      <p>Adv.</p>
-    </div>
+        <p>Country</p>
+        <p>Low</p>
+        <p>Inter.</p>
+        <p>High</p>
+        <p>Adv.</p>
+      </div>
     </div>
   </div>
-    <svg id="xAxisDiv" style="width: 100%">
-    </svg>
+  <svg id="xAxisDiv" style="width: 100%">
+  </svg>
 
-    <!-- Create a tooltip that will appear on the hover of certain elements -->
-    <div id="tooltip" class="tooltip">
-    </div>
-    </div>
+  <!-- Create a tooltip that will appear on the hover of certain elements -->
+  <div id="tooltip" class="tooltip">
+  </div>
+  </div>
 
-    <script type="module" src="https://html-css-js.jadesign.repl.co/script.js"></script>
+  <script type="module" src="https://testingdirectory-1.jadesign.repl.co/replit/script.js"></script>
 
-    <!--
+  <!--
   This script places a badge on your repl's full-browser view back to your repl's cover
   page. Try various colors for the theme: dark, light, red, orange, yellow, lime, green,
   teal, blue, blurple, magenta, pink!
   -->
-    <script src="https://replit.com/public/js/replit-badge.js" theme="blue" defer></script>
+  <script src="https://replit.com/public/js/replit-badge.js" theme="blue" defer></script>
 </body>
 
 </html>

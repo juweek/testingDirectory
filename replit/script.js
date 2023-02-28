@@ -1,4 +1,6 @@
 import { createCountryDivs } from './helperFunctions/sidePanel.js';
+import { showClicked } from './helperFunctions/searchFilter.js';
+
 
 /*
 ------------------------
@@ -47,83 +49,6 @@ function toTitleCase(str) {
   return str.replace(/\b[a-z]/g, char => char.toUpperCase());
 }
 
-/*
-------------------------
-METHOD: show all of the clicked buttons in a div
-------------------------
-  */
-function showClicked(currentClickedButtons, data) {
-  //clear out the div
-  d3.select("#searchBarResults").selectAll("*").remove();
-  //add the new divs
-  d3.select("#searchBarResults")
-    .selectAll("div")
-    .data(currentClickedButtons)
-    .enter()
-    .append("div")
-    //set the font size
-    .text(function (d) {
-      //get the name of the country from d
-      return d;
-    })
-    .on("click", function (d) {
-      //remove the current clicked button from the list
-      let index = clickedButtons.indexOf(d);
-      if (index > -1) {
-        clickedButtons.splice(index, 1);
-      }
-      //check the text in the search bar and see if the substring is in the text of the button you just clicked
-      let currentSearchText = d3.select("#searchBarSelector").property("value").toLowerCase();
-      console.log(d)
-      console.log(currentSearchText)
-      //check if currentSearchText is a substring of d
-      if (d.toLowerCase().includes(currentSearchText)) {
-        //if it is, add the button to resultsDropdown 
-        let resultsDropdown = d3.select("#searchBarResults")._groups[0][0];
-        let html = `<button class="resultButton">${toTitleCase(d)}</button>`;
-        resultsDropdown.innerHTML += html;
-    }
-
-
-      //recall the method to show the buttons in the search bar
-      let searchValue = d3.select("#searchBarSelector").property("value");
-      let countriesList = data.map(d => d.Country.toLowerCase());
-      let resultsDropdown = d3.select("#searchBarResults")._groups[0][0];
-
-      //create an array of all the countries
-      let countries = []
-      data.forEach(country => {
-        //push the lowercase version of the country into the array
-        countries.push(country.Country.toLowerCase())
-      })
-
-      //check to see if the button you just clicked matches the search bar
-      const filteredResults = countriesList.filter(result => result.includes(searchValue.toLowerCase()));
-      createSearchResults(searchValue, countriesList, resultsDropdown);
-
-      //if there are no moe clicked buttons, you set the data to the master data set
-      showClicked(clickedButtons, data);
-    })
-  //if there are no more clicked buttons, you set the data to the master data set
-  var tempfilteredData = [];
-  if (currentClickedButtons.length == 0) {
-    globalDataSet = masterDataSet;
-  } else {
-    tempfilteredData = masterDataSet.filter(item => currentClickedButtons.includes(item.Country));
-    //console.log(tempfilteredData)
-    globalDataSet = tempfilteredData;
-  }
-  if (tempfilteredData.length == 0) {
-    createChart(svg, masterDataSet);
-    console.log('createCountryDivs is being called')
-    createCountryDivs(masterDataSet);
-  }
-  else {
-    createChart(svg, tempfilteredData);
-    console.log('createCountryDivs is being called')
-    createCountryDivs(tempfilteredData);
-  }
-}
 
 /*
 ------------------------
@@ -188,15 +113,31 @@ function createSearchResults(searchValue, countriesList, resultsDropdown) {
   const buttons = d3.selectAll('.resultButton');
 
   // Attach a click event listener to each button
-  buttons.on('click', function () {
+  buttons.on('click', function() {
     let button = d3.select(this);
     //add the current clicked button to the list of clicked buttons
     clickedButtons.push(button._groups[0][0].innerHTML);
     //hide the current clicked button
     button.style("display", "none");
     //call the function to filter the buttons that have been clicked
-    showClicked(clickedButtons, globalDataSet);
-  });
+    showClicked(clickedButtons, globalDataSet, masterDataSet);
+    var tempfilteredData = [];
+    if (clickedButtons.length == 0) {
+      globalDataSet = masterDataSet;
+    } else {
+      tempfilteredData = masterDataSet.filter(item => clickedButtons.includes(item.Country));
+      //console.log(tempfilteredData)
+      globalDataSet = tempfilteredData;
+    }
+      if (tempfilteredData.length == 0) {
+        createChart(svg, masterDataSet);
+        createCountryDivs(masterDataSet);
+      }
+      else {
+        createChart(svg, tempfilteredData);
+        createCountryDivs(tempfilteredData);
+      }
+    });
 }
 
 /*
@@ -239,7 +180,7 @@ function createChart(svg, data) {
   // Y axis
   var y = d3.scaleBand()
     .range([0, height])
-    .domain(data.map(function (d) { return d.Country; }))
+    .domain(data.map(function(d) { return d.Country; }))
     .padding(1);
   svg.append("g")
     .attr("id", "yAxis")
@@ -252,7 +193,7 @@ function createChart(svg, data) {
   //create a loop that creates a vertical zebra background for the chart that alternates between grey and white every 10  points on the x axis
   var zebra = 0;
   for (var i = 0; i < 100; i++) {
-    if (zebra == 0) { 
+    if (zebra == 0) {
       svg.append("rect")
         .attr("x", x(i))
         .attr("y", 0)
@@ -278,12 +219,12 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("line")
-    .attr("x1", function (d) { return x(d.advanced); })
-    .attr("x2", function (d) { return x(d.low); })
-    .attr("y1", function (d) { return y(d.Country); })
-    .attr("y2", function (d) { return y(d.Country); })
+    .attr("x1", function(d) { return x(d.advanced); })
+    .attr("x2", function(d) { return x(d.low); })
+    .attr("y1", function(d) { return y(d.Country); })
+    .attr("y2", function(d) { return y(d.Country); })
     .attr("class", "lineChartElement")
-    .on("mouseenter", function (d) {
+    .on("mouseenter", function(d) {
       let currentCountry = d.Country
       let currentLow = d.low
       let currentIntermediate = d.intermediate
@@ -307,7 +248,7 @@ function createChart(svg, data) {
       currentLine.classList.add("active");
       // do something when the mouse enters the line
     })
-    .on("mouseleave", function () {
+    .on("mouseleave", function() {
       //remove 'active' from all line elements
       svg.selectAll(".lineChartElement").classed("active", false);
       let tooltip = d3.select("#tooltip");
@@ -321,8 +262,8 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("circle")
-    .attr("cx", function (d) { return x(d.advanced); })
-    .attr("cy", function (d) { return y(d.Country); })
+    .attr("cx", function(d) { return x(d.advanced); })
+    .attr("cy", function(d) { return y(d.Country); })
     .attr("r", "6")
     .style("fill", "#010101")
 
@@ -331,8 +272,8 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("circle")
-    .attr("cx", function (d) { return x(d.high); })
-    .attr("cy", function (d) { return y(d.Country); })
+    .attr("cx", function(d) { return x(d.high); })
+    .attr("cy", function(d) { return y(d.Country); })
     .attr("r", "6")
     .style("fill", "#ffffff")
     .attr("stroke", "#010101")
@@ -342,8 +283,8 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("circle")
-    .attr("cx", function (d) { return x(d.intermediate); })
-    .attr("cy", function (d) { return y(d.Country); })
+    .attr("cx", function(d) { return x(d.intermediate); })
+    .attr("cy", function(d) { return y(d.Country); })
     .attr("r", "6")
     .style("fill", "#E85A56")
 
@@ -352,8 +293,8 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("circle")
-    .attr("cx", function (d) { return x(d.low); })
-    .attr("cy", function (d) { return y(d.Country); })
+    .attr("cx", function(d) { return x(d.low); })
+    .attr("cy", function(d) { return y(d.Country); })
     .attr("r", "6")
     .style("fill", "#F2A9A4")
 
@@ -369,7 +310,7 @@ function createChart(svg, data) {
   //set the overflow to vertical scroll
   dataChart.style("overflow", "scroll-x")
 
-  dataChart.on("mouseleave", function () {
+  dataChart.on("mouseleave", function() {
     //remove 'active' from all line elements
     let tooltip = d3.select("#tooltip");
     tooltip.style("display", "none");
@@ -412,13 +353,13 @@ sidePanel.addEventListener("click", function() {
 METHOD: read in the data and create the axes
 ------------------------
 */
-d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function (data) {
+d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(data) {
   var currentDataSet = data
   globalDataSet = data
   masterDataSet = data
   // Add X axis
   var x = d3.scaleLinear()
-    .domain([00, 100])
+    .domain([0, 100])
     .range([0, width]);
   // Create the second x-axis generator
 
@@ -427,7 +368,7 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function (da
   METHOD: create the dropdowns that determine if we will sort or search
   ------------------------
   */
-  d3.selectAll(".dropdownMenu").on("change", function () {
+  d3.selectAll(".dropdownMenu").on("change", function() {
     console.log('heyyooo')
     let value = sortDropdown.property("value")
     let newData = []
@@ -453,7 +394,7 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function (da
 METHOD: create the search bar that will take in the string and filter out all the countries that don't include it
 ------------------------
 */
-  d3.selectAll("#searchBar").on("keyup", function () {
+  d3.selectAll("#searchBar").on("keyup", function() {
     console.log('heyooo')
     let value = searchBar.property("value")
     let newData = []
