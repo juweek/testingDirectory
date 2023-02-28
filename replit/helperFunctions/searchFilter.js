@@ -77,6 +77,7 @@ METHOD: create the results for the searchbar menu
 ------------------------
 */
 function createSearchResults(searchValue, countriesList, resultsDropdown) {
+  console.log('createsearchresults is being called')
   const inputValue = searchValue;
 
   let html = '';
@@ -116,4 +117,4 @@ function createSearchResults(searchValue, countriesList, resultsDropdown) {
   });
 }
 
-export { showClicked };
+export { showClicked, createSearchResults };

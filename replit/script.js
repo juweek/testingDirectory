@@ -1,6 +1,7 @@
-import { createCountryDivs } from './helperFunctions/sidePanel.js';
-import { showClicked } from './helperFunctions/searchFilter.js';
-
+import { createCountryDivs, sidePanelButtonHandler } from './helperFunctions/sidePanel.js';
+import { showClicked, createSearchResults } from './helperFunctions/searchFilter.js';
+import { sortList } from './helperFunctions/sort.js';
+import { toTitleCase } from './helperFunctions/random.js';
 
 /*
 ------------------------
@@ -39,106 +40,6 @@ var sortDropdown = d3.select("#sortDropdown");
 var orderDropdown = d3.select("#orderDropdown");
 var listOfDropdowns = sortDropdown.selectAll(".dropdown")
 let clickedButtons = [];
-/*
-------------------------
-METHOD: create something for camelCase
-------------------------
-  */
-function toTitleCase(str) {
-  // Convert the string to Title Case using a regular expression
-  return str.replace(/\b[a-z]/g, char => char.toUpperCase());
-}
-
-
-/*
-------------------------
-METHOD: sort data to use after a dropdown is selected
-------------------------
-  */
-function sortList(data, property, order) {
-  // Sort the list of objects based on the specified property and sort order
-  if (order !== 'asc' && order !== 'desc') {
-    throw new Error('Invalid sort order. Must be "asc" or "desc"');
-  }
-  const sortedList = data.sort((a, b) => {
-    // If the sort order is 'asc', return -1 if a comes before b,
-    // 0 if a and b are equal, and 1 if a comes after b
-    if (order === 'asc') {
-      if (a[property] < b[property]) return -1;
-      if (a[property] > b[property]) return 1;
-      return 0;
-    }
-    // If the sort order is 'desc', return 1 if a comes before b,
-    // 0 if a and b are equal, and -1 if a comes after b
-    if (order === 'desc') {
-      if (a[property] < b[property]) return 1;
-      if (a[property] > b[property]) return -1;
-      return 0;
-    }
-  });
-  return sortedList;
-}
-
-/*
-------------------------
-METHOD: create the results for the searchbar menu
-------------------------
-  */
-function createSearchResults(searchValue, countriesList, resultsDropdown) {
-  const inputValue = searchValue;
-
-  let html = '';
-
-  const filteredResults = countriesList.filter(result => result.includes(inputValue.toLowerCase()));
-
-  //if the search inputValue is empty, then don't show the results and instead show 'no results'
-  if (inputValue === '') {
-    resultsDropdown.innerHTML = '';
-    return;
-  }
-  else if (filteredResults == '') {
-    resultsDropdown.innerHTML = 'No results';
-    return;
-  }
-  else {
-    //change string to titleCase
-    filteredResults.forEach(result => {
-      // Create a new button for each result
-      html += `<button class="resultButton" id="${toTitleCase(result)}">${toTitleCase(result)}</button>`;
-    });
-    // Update the results dropdown with the new HTML
-    resultsDropdown.innerHTML = html;
-  }
-  // Select all buttons with the class "resultButton"
-  const buttons = d3.selectAll('.resultButton');
-
-  // Attach a click event listener to each button
-  buttons.on('click', function() {
-    let button = d3.select(this);
-    //add the current clicked button to the list of clicked buttons
-    clickedButtons.push(button._groups[0][0].innerHTML);
-    //hide the current clicked button
-    button.style("display", "none");
-    //call the function to filter the buttons that have been clicked
-    showClicked(clickedButtons, globalDataSet, masterDataSet);
-    var tempfilteredData = [];
-    if (clickedButtons.length == 0) {
-      globalDataSet = masterDataSet;
-    } else {
-      tempfilteredData = masterDataSet.filter(item => clickedButtons.includes(item.Country));
-      //console.log(tempfilteredData)
-      globalDataSet = tempfilteredData;
-    }
-      if (tempfilteredData.length == 0) {
-        createChart(svg, masterDataSet);
-        createCountryDivs(masterDataSet);
-      }
-      else {
-        createChart(svg, tempfilteredData);
-        createCountryDivs(tempfilteredData);
-      }
-    });
-}
 
 /*
 ------------------------
@@ -338,15 +239,7 @@ datavizCopy.addEventListener("scroll", function() {
 METHOD: create a click event listener for datavizCopy that toggles the display of the div
 ------------------------
 */
-let sidePanel = document.getElementById("sidePanelButton")
-sidePanel.addEventListener("click", function() {
-  let datavizCopy = document.getElementById("datavizCopy")
-  if (datavizCopy.style.display === "none") {
-    datavizCopy.style.display = "block"
-  } else {
-    datavizCopy.style.display = "none"
-  }
-});
+sidePanelButtonHandler('sidePanelButton', 'datavizCopy')
 
 /*
 ------------------------
@@ -365,11 +258,10 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(dat
 
   /*
   ------------------------
-  METHOD: create the dropdowns that determine if we will sort or search
+  METHOD: create the dropdowns that determine if we will sort asc or desc
   ------------------------
   */
   d3.selectAll(".dropdownMenu").on("change", function() {
-    console.log('heyyooo')
     let value = sortDropdown.property("value")
     let newData = []
     //first, check if the orderDropdown is set to asc or desc
@@ -395,7 +287,6 @@ METHOD: create the search bar that will take in the string and filter out all th
 ------------------------
 */
   d3.selectAll("#searchBar").on("keyup", function() {
-    console.log('heyooo')
     let value = searchBar.property("value")
     let newData = []
     newData = data.filter(country => country.Country.toLowerCase().includes(value.toLowerCase()));
@@ -407,6 +298,7 @@ METHOD: create the search bar that will take in the string and filter out all th
     else {
       height = newData.length * 50
     }
+    console.log('the search bar is being called')
     createChart(svg, newData);
     createCountryDivs(newData);
   })
@@ -430,6 +322,7 @@ METHOD: create the search bar that will take in the string and filter out all th
   // Add an event listener to the search input that filters the results
   // whenever the input value changes
   searchInput.addEventListener('input', event => {
+    console.log('hello')
     const inputValue = event.target.value;
     createSearchResults(inputValue, countries, resultsDropdown);
   });
