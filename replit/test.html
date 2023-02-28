@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>
+  <link href="main.css" rel="stylesheet" type="text/css" />
+  <link href="lineGraph.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <div class="bodyContent">
+    <h2>Trend Plots of Average Reading Achievement: Gender Gap</h2>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+      magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+      consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+    </p>
+    <div class="formsContainer">
+      <!-- Create the a dropdown menu that will allow you to select certain countries -->
+      <div id="searchBarSelectorContainer">
+        <input id="searchBarSelector" type="text" name="search" placeholder="Search for a country" />
+        <!-- Results container -->
+        <div id="resultsSelector"></div>
+      </div>
+      <!-- Create the a dropdown menu that will allow you to select certain countries -->
+      <div id="searchBarResultsContainer">
+        <div id="searchBarResults"></div>
+      </div>
+      <!-- Create a text search field that will be used to filter the graph 
+    <form action="index.html" method="GET">
+      <input id="searchBar" type="text" name="search" placeholder="Search for a country" />
+    </form>
+     -->
+      <!-- Create a 'Sort By' dropdown that will be used to sort the graph -->
+      <select id="sortDropdown" class="dropdownMenu" placeholder="Search for country" name="sortBy">
+        <option value="Country">Sort By: Name (Alphabetical)</option>
+        <option selected value="low">Sort By: Low</option>
+        <option value="intermediate">Sort By: Intermediate</option>
+        <option value="high">Sort By: High</option>
+        <option value="advanced">Sort By: Advanced</option>
+      </select>
+      <!-- Create a 'Sort Order' dropdown that will be used to sort the graph -->
+      <select id="orderDropdown" class="dropdownMenu" name="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+    <div id="svganchor" class="graphic" role="img" class="graph centered">
+    </div>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.1.1/d3.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script src="https://unpkg.com/d3-tip@0.9.1/dist/index.js"></script>
+  <script src="genderGap.js"></script>
+
+  <!--
+  This script places a badge on your repl's full-browser view back to your repl's cover
+  page. Try various colors for the theme: dark, light, red, orange, yellow, lime, green,
+  teal, blue, blurple, magenta, pink!
+  -->
+  <script src="https://replit.com/public/js/replit-badge.js" theme="blue" defer></script>
+</body>
+
+</html>

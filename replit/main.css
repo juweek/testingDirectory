@@ -1,0 +1,130 @@
+h2 {
+    font-family: 'Open Sans Condensed', sans-serif;
+    font-size: 30px;
+    margin-bottom: 0px;
+    font-weight: 400;
+}
+p, .modal__text, .chartTitleBackground {
+    font-family: 'PT Sans', sans-serif;
+}
+
+body {
+  position: relative;
+}
+
+body {
+  border-top: 60px solid #AA412F;
+}
+
+/* add in the media query for desktop */
+@media only screen and (min-width: 768px) {
+  .bodyContent {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+}
+
+/* add in the media query for desktop */
+@media only screen and (min-width: 1068px) {
+  .bodyContent {
+        max-width: 70%;
+        margin: 0 auto;
+    }
+}
+
+#searchBar {
+    width: 50%;
+    min-height: 30px;
+    max-height: 30px;
+}
+
+input, select {
+    min-height: 40px;
+    max-height: 40px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    background-color: #EFEFEF;
+    color:#AA412F;
+    margin-top: 6px;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color:#AA412F;
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color:#AA412F;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color:#AA412F;
+}
+
+#searchBarSelectorContainer {
+    position: relative;
+    margin-bottom: 6px;
+  }
+  
+  /* Search input */
+  #searchBarSelector {
+    width: 360px;
+    height: 30px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 0px;
+  }
+  
+  /* Results dropdown */
+  #resultsSelector {
+    width: 360px;
+    background-color: #dfdfdf;
+    padding: 0px;
+  }
+
+  #resultsSelector button {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #fff;
+    text-align: left;
+    margin-right: 4px;
+    margin-bottom: 6px;
+    margin-top: 4px;
+  }
+
+  #resultsSelector button:hover {
+    background-color: #AA412F;
+    color: white;
+  }
+
+  #searchBarResults {
+    display: flex;
+    color: white;
+    flex-wrap: wrap;
+  }
+
+  #searchBarResults div {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    background-color: #AA412F;
+    text-align: left;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    max-width: fit-content;
+  }
+
+  #searchBarResults div::before {
+    content: 'x';
+    margin-right: 5px;
+  }
+  .yAxisText {
+    font: 12px sans-serif;
+  }
+
+  .resultButton.hidden {
+    display: none;
+  }
