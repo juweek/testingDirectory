@@ -1,6 +1,6 @@
 import { createCountryDivs, sidePanelButtonHandler } from './helperFunctions/sidePanel.js';
 import { showClicked, createSearchResults } from './helperFunctions/searchFilter.js';
-import { sortList } from './helperFunctions/sort.js';
+import { sortList, sortDropdownHandler } from './helperFunctions/sort.js';
 import { toTitleCase } from './helperFunctions/random.js';
 
 /*
@@ -11,9 +11,6 @@ METHOD: set the dimensions of the graph
 var margin = { top: 10, right: 100, bottom: 0, left: 140 },
   width = 740 - margin.left - margin.right,
   height = 900 - margin.top - margin.bottom;
-
-var globalDataSet = [];
-var masterDataSet = [];
 
 /*
 ------------------------
@@ -38,8 +35,6 @@ METHOD: //select all the dropdowns
 */
 var sortDropdown = d3.select("#sortDropdown");
 var orderDropdown = d3.select("#orderDropdown");
-var listOfDropdowns = sortDropdown.selectAll(".dropdown")
-let clickedButtons = [];
 
 /*
 ------------------------
@@ -48,23 +43,14 @@ METHOD: create the d3 chart. set the y axis to the countries
 */
 function createChart(svg, data) {
 
-  //clear out the svg 
+  //clear out the svg,  set the height relative to the length of the data
   var width = svg.attr("width")
-  //set the height relative to the length of the data
   var height = data.length * 20;
-
-  /*reset the height of the svg if the data is less than the original height
-  if (height < 400) {
-    document.getElementById("my_dataviz").style.height = height + 20 + "px";
-  }
-  */
-
   svg.selectAll("*").remove();
 
   // Remove the current x-axis element
   svg.select("#xAxis").remove();
   xAxisDiv.select("#xAxis2").remove();
-
 
   // Create a new x-axis element
   var x = d3.scaleLinear()
@@ -84,34 +70,27 @@ function createChart(svg, data) {
     .domain(data.map(function(d) { return d.Country; }))
     .padding(1);
   svg.append("g")
-    .attr("id", "yAxis")
     .call(d3.axisLeft(y))
     .selectAll("text")
     .style("text-anchor", "end")
-    .attr('class', 'yAxisText')
-  //clear out all the current svg elements so you can redraw the map from scratch everytime this is called
 
-  //create a loop that creates a vertical zebra background for the chart that alternates between grey and white every 10  points on the x axis
+  //create a loop that creates a vertical zebra background for the chart that alternates between grey and white every 10 points on the x axis
   var zebra = 0;
   for (var i = 0; i < 100; i++) {
-    if (zebra == 0) {
-      svg.append("rect")
-        .attr("x", x(i))
-        .attr("y", 0)
-        .attr("width", x(10))
-        .attr("height", height)
-        .attr("fill", "#f2f2f2");
-      zebra = 1;
-    }
-    else {
-      svg.append("rect")
-        .attr("x", x(i))
-        .attr("y", 0)
-        .attr("width", x(10))
-        .attr("height", height)
-        .attr("fill", "#ffffff");
-      zebra = 0;
-    }
+    svg.append("rect")
+      .attr("x", x(i))
+      .attr("y", 0)
+      .attr("width", x(10))
+      .attr("height", height)
+      .attr("fill", function() {
+        if (zebra == 0) {
+          zebra = 1;
+          return "#f2f2f2";
+        } else {
+          zebra = 0;
+          return "#ffffff";
+        }
+      });
     i = i + 9;
   }
 
@@ -125,6 +104,8 @@ function createChart(svg, data) {
     .attr("y1", function(d) { return y(d.Country); })
     .attr("y2", function(d) { return y(d.Country); })
     .attr("class", "lineChartElement")
+    .attr("stroke", "grey")
+    .attr("stroke-width", "1.4px")
     .on("mouseenter", function(d) {
       let currentCountry = d.Country
       let currentLow = d.low
@@ -142,21 +123,15 @@ function createChart(svg, data) {
       tooltip.style("left", (d3.event.pageX + 10) + "px")
       tooltip.style("top", (d3.event.pageY - 40) + "px")
       tooltip.style("opacity", 1);
-      //remove 'active' from all line elements
+      //remove 'active' from all line elements, then add 'active' to the current line element not using classed
       svg.selectAll(".lineChartElement").classed("active", false);
-      //add 'active' to the current line element not using classed
       let currentLine = event.target;
       currentLine.classList.add("active");
-      // do something when the mouse enters the line
     })
     .on("mouseleave", function() {
       //remove 'active' from all line elements
       svg.selectAll(".lineChartElement").classed("active", false);
-      let tooltip = d3.select("#tooltip");
-
     })
-    .attr("stroke", "grey")
-    .attr("stroke-width", "1.4px")
 
   // Circles of variable 1
   svg.selectAll("mycircle")
@@ -168,7 +143,7 @@ function createChart(svg, data) {
     .attr("r", "6")
     .style("fill", "#010101")
 
-  // Circles of variable 2
+  // Circles of the high variable
   svg.selectAll("mycircle")
     .data(data)
     .enter()
@@ -180,6 +155,7 @@ function createChart(svg, data) {
     .attr("stroke", "#010101")
     .attr("stroke-width", "1.4px")
 
+  // Circles of the intermediate variable
   svg.selectAll("mycircle")
     .data(data)
     .enter()
@@ -189,7 +165,7 @@ function createChart(svg, data) {
     .attr("r", "6")
     .style("fill", "#E85A56")
 
-
+  // Circles of the low variable
   svg.selectAll("mycircle")
     .data(data)
     .enter()
@@ -199,23 +175,20 @@ function createChart(svg, data) {
     .attr("r", "6")
     .style("fill", "#F2A9A4")
 
-  let dataChart = d3.select("#my_dataviz")
   //change the height of dataChart to match the height of the svg
-  dataChart.attr("height", height)
-  //change the height of the sv
-
+  let dataChart = d3.select("#my_dataviz")
   var holderSVG = d3.select("#my_dataviz").select("svg");
-
+  dataChart.attr("height", height)
+  dataChart.style("overflow", "scroll-x")
   holderSVG.attr("height", height + 10);
   holderSVG.attr("width", width);
-  //set the overflow to vertical scroll
-  dataChart.style("overflow", "scroll-x")
 
   dataChart.on("mouseleave", function() {
     //remove 'active' from all line elements
     let tooltip = d3.select("#tooltip");
     tooltip.style("display", "none");
   })
+  createCountryDivs(data)
 }
 
 /*
@@ -247,14 +220,12 @@ METHOD: read in the data and create the axes
 ------------------------
 */
 d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(data) {
-  var currentDataSet = data
+  var globalDataSet = [];
   globalDataSet = data
-  masterDataSet = data
   // Add X axis
   var x = d3.scaleLinear()
     .domain([0, 100])
     .range([0, width]);
-  // Create the second x-axis generator
 
   /*
   ------------------------
@@ -262,70 +233,111 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(dat
   ------------------------
   */
   d3.selectAll(".dropdownMenu").on("change", function() {
-    let value = sortDropdown.property("value")
-    let newData = []
-    //first, check if the orderDropdown is set to asc or desc
-    if (orderDropdown.property("value") === "asc") {
-      //call the sort function you created above
-      newData = sortList(globalDataSet, value, "asc")
-    } else {
-      newData = sortList(globalDataSet, value, "desc")
-    }
+    let newData = sortDropdownHandler(orderDropdown, globalDataSet, svg)
+    console.log('//////////////')
+    console.log(globalDataSet)
     globalDataSet = newData
-    //let searchValue = searchBar.property("value")
-    //newData = globalDataSet.filter(country => country.Country.toLowerCase().includes(searchValue.toLowerCase()));
-    //currentDataSet = newData
-    //update the svg
-    createChart(svg, newData);
-    console.log('createCountryDivs is being called')
-    createCountryDivs(newData);
-  });
-
-  /*
-------------------------
-METHOD: create the search bar that will take in the string and filter out all the countries that don't include it
-------------------------
-*/
-  d3.selectAll("#searchBar").on("keyup", function() {
-    let value = searchBar.property("value")
-    let newData = []
-    newData = data.filter(country => country.Country.toLowerCase().includes(value.toLowerCase()));
-    currentDataSet = newData
-    //update the svg
-    if (value == "") {
-      height = 300 - margin.top - margin.bottom;
-    }
-    else {
-      height = newData.length * 50
-    }
-    console.log('the search bar is being called')
     createChart(svg, newData);
     createCountryDivs(newData);
   })
 
   /*
   ------------------------
-  METHOD: populate the search input with the list of countries
+  METHOD: populate the search input with the list of countries and called createSearchResulta whenever an input event is fired
   ------------------------
   */
-  //create an array of all the countries
+  //push the lowercase version of the country into the array
   let countries = []
   data.forEach(country => {
-    //push the lowercase version of the country into the array
     countries.push(country.Country.toLowerCase())
   })
 
   // Get references to the search input and the results dropdown
   const searchInput = document.querySelector('#searchBarSelector');
   const resultsDropdown = document.querySelector('#resultsSelector');
+  let currentClickedButtons = [];
 
-  // Add an event listener to the search input that filters the results
-  // whenever the input value changes
+  // Add an event listener to the search input that filters the results whenever the input value changes
   searchInput.addEventListener('input', event => {
-    console.log('hello')
     const inputValue = event.target.value;
-    createSearchResults(inputValue, countries, resultsDropdown);
-  });
+    createSearchResults(data, inputValue, countries, resultsDropdown);
+
+    /*
+    ------------------------
+    SEARCH RESULTS BUTTONS: Select all buttons in the searchResults area. attach a click event listener to each button so, when clicked, it adds the country to the currentlySelectedCountries section, then redraws the chart
+    ------------------------
+    */
+    const searchResultsButtons = d3.selectAll('.resultButton');
+    searchResultsButtons.on('click', function() {
+      let currentlySelectedCountriesDataset = []
+      let button = d3.select(this);
+
+      currentClickedButtons.push(button._groups[0][0].innerHTML);
+      button.classed("resultButtonSelected", true);
+
+      // For each country in currentClickedButtons, go through the data array and find the entry where its Country property matches country
+      currentClickedButtons.forEach(function(country) {
+        let index = data.findIndex(d => d.Country === country);
+        currentlySelectedCountriesDataset.push(data[index])
+      })
+
+      //call the function to filter the buttons that have been clicked, then call the createChart function
+      showClicked(currentClickedButtons, data);
+      createChart(svg, currentlySelectedCountriesDataset);
+      globalDataSet = currentlySelectedCountriesDataset;
+      /*
+       ------------------------
+       SELECTED COUNTRIES BUTTONS: Select all buttons in the selectedCountries area. attach a click event listener to each button so, when clicked, it removes the country from the currentlySelectedCountries section, then redraws the chart
+       ------------------------
+       */
+      const selectedResultsButtons = d3.selectAll('.selectedCountry');
+      selectedResultsButtons.on('click', function() {
+
+        //get the name of the current button clicked
+        let currentCountryButton = d3.select(this);
+        let currentCountryButtonName = currentCountryButton._groups[0][0].innerHTML;
+
+        // Remove the currently selected country from the currentClickedButtons list
+        let index = currentClickedButtons.indexOf(currentCountryButtonName);
+        if (index > -1) {
+          currentClickedButtons.splice(index, 1);
+        }
+
+        //Remove the country that was clicked from the currentlySelectedCountriesDataset 
+        let currentlySelectedCountriesDataset = [];
+        currentClickedButtons.forEach(function(country) {
+          let index = data.findIndex(d => d.Country === country);
+          currentlySelectedCountriesDataset.push(data[index]);
+        })
+
+        //Remove the currently selected country from the currentlySelectedCountries section
+        const selectedElements = document.querySelectorAll('.selectedCountry');
+        selectedElements.forEach(element => {
+        if (element.id.includes(currentCountryButtonName)) {
+            element.remove();
+        }
+      });
+
+        //remove '.resultButtonSelected' class from the button in the results div'
+        let searchBarResults = document.querySelectorAll('.resultButton');
+        for (let i = 0; i < searchBarResults.length; i++) {
+          if (searchBarResults[i].id == currentCountryButtonName) {
+            searchBarResults[i].classList.remove('resultButtonSelected');
+          }
+        }
+
+        //if currentlySelectedCountries is empty, redraw createChart with the data from the data array
+        if (currentlySelectedCountriesDataset.length != 0) {
+           createChart(svg, currentlySelectedCountriesDataset);
+           globalDataSet = currentlySelectedCountriesDataset;
+        } else {
+            createChart(svg, data);
+            globalDataSet = data;
+            console.log('this just fired')
+        }
+      })
+    })
+  })
 
   /*
   ------------------------
@@ -341,10 +353,9 @@ METHOD: create the search bar that will take in the string and filter out all th
       width = window.innerWidth - 60;
       height = 900;
     }
-    //set the new width and height of the svg
+    //set the new width and height of the svg, set the new width and height of the x-axis
     svg.attr("width", width)
     svg.attr("height", height);
-    //set the new width and height of the x-axis
     xAxisDiv.attr("width", width)
     xAxisDiv.attr("height", 100);
     createChart(svg, globalDataSet);

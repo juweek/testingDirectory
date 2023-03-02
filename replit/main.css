@@ -100,6 +100,11 @@ input, select {
     color: white;
   }
 
+  #resultsSelector .resultButtonSelected {
+    background-color: grey;
+    pointer-events: none;
+  }
+
   #searchBarResults {
     display: flex;
     color: white;
