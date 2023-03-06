@@ -9,69 +9,88 @@
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 
-
 <body>
   <div class="bodyContent">
-  <h2>Standard deviation of achievement/distribution</h2>
-  <p>Note: Five countries and one benchmarking entity participated in the PIRLS Literacy assessment: Egypt, Iran, Kuwait, Morocco, and South Africa as well as Denmark (3).</p>
-  <p>Iran and Morocco also took part in the fourth grade assessment and their results are based on an average of both assessments.</p>
-  <p>The PIRLS achievement scale was established in 2001 based on the combined achievement distribution of all countries that participated in PIRLS 2001. To provide a point of reference for country comparisons, the scale centerpoint of 500 was located at the mean of the combined achievement distribution. The units of the scale were chosen so that 100 scale score points corresponded to the standard deviation of the distribution.</p>
-  <!-- Load d3.js -->
-  <script src="https://d3js.org/d3.v4.js"></script>
+    <h2>Standard deviation of achievement/distribution</h2>
+    <p>Note: Five countries and one benchmarking entity participated in the PIRLS Literacy assessment: Egypt, Iran,
+      Kuwait, Morocco, and South Africa as well as Denmark (3).</p>
+    <p>Iran and Morocco also took part in the fourth grade assessment and their results are based on an average of both
+      assessments.</p>
+    <p>The PIRLS achievement scale was established in 2001 based on the combined achievement distribution of all
+      countries that participated in PIRLS 2001. To provide a point of reference for country comparisons, the scale
+      centerpoint of 500 was located at the mean of the combined achievement distribution. The units of the scale were
+      chosen so that 100 scale score points corresponded to the standard deviation of the distribution.</p>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
 
 
-  <div class="formsContainer">
-    <div id="searchBarSelectorContainer">
-      <input id="searchBarSelector" type="text" name="search" placeholder="Search for a country" />
-      <!-- Results container -->
-      <div id="resultsSelector"></div>
-    </div>
-    <!-- Create the a dropdown menu that will allow you to select certain countries -->
-    <div id="searchBarResultsContainer">
-      <div id="searchBarResults"></div>
-    </div>
-  </div>
+    <div class="formsContainer">
+      <div id="searchBarSelectorContainer">
+        <input id="searchBarSelector" type="text" name="search" placeholder="Search for a country" />
+        <!-- Results container -->
+        <div id="resultsSelector"></div>
+      </div>
+      <!-- Create the a dropdown menu that will allow you to select certain countries -->
+      <div id="searchBarResultsContainer">
+        <div id="searchBarResults"></div>
+      </div>
+
       <!-- Create a 'Sort By' dropdown that will be used to sort the graph -->
       <select id="sortDropdown" class="dropdownMenu" placeholder="Search for country" name="sortBy">
-      <option value="Country">Sort By: Name (Alphabetical)</option>
-      <option selected value="fifth_percentile">Sort By: Low</option>
-      <option value="twenty_fifth">Sort By: Intermediate</option>
-      <option value="nintey_fifth_confidence">Sort By: High</option>
-      <option value="seventy_fifth">Sort By: Advanced</option>
-    </select>
+        <option value="Country">Sort By: Name (Alphabetical)</option>
+        <option selected value="fifth_percentile">Sort By: Low</option>
+        <option value="twenty_fifth">Sort By: Intermediate</option>
+        <option value="nintey_fifth_confidence">Sort By: High</option>
+        <option value="seventy_fifth">Sort By: Advanced</option>
+      </select>
       <!-- Create a 'Sort Order' dropdown that will be used to sort the graph -->
-    <select id="orderDropdown" class="dropdownMenu" name="sortOrder">
-      <option value="asc">Ascending</option>
-      <option value="desc">Descending</option>
-    </select>
-    <div class="modalContentGroup">
-            <div class="modal__text keyBlock">
-            <div class="keyBlockSub">
-            <div class="keyBlockYes" style="border-radius: 100px; background-color: #c70000;"></div><div>Lorem</div>
-            </div>
-            <div class="keyBlockSub">
-            <div class="keyBlockYes" style="border-radius: 100px; background-color: #F7CFC5;"></div><div>Ipsum</div>
-            </div>
-            <div class="keyBlockSub">
-              <div class="keyBlockYes" style="border-radius: 100px; background-color: #000;"></div><div>Dolor</div>
-              </div>
-            </div>
-      
-    </div>
-      
-      <!-- Create a graph container that will be used to place the graph -->
+      <select id="orderDropdown" class="dropdownMenu" name="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+      <div class="modalContentGroup">
+        <div class="modal__text keyBlock">
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #c70000;"></div>
+            <div>Lorem</div>
+          </div>
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #F7CFC5;"></div>
+            <div>Ipsum</div>
+          </div>
+          <div class="keyBlockSub">
+            <div class="keyBlockYes" style="border-radius: 100px; background-color: #000;"></div>
+            <div>Dolor</div>
+          </div>
+          <button id="sidePanelButton">Toggle Side Panel</button>
+        </div>
 
-  <!-- Create a div where the graph will take place -->
-  <div id="my_dataviz"></div>
-  <svg id="xAxisDiv" style="width: 100%">
-  </svg>
+      </div>
+    </div>
+
+    <!-- Create a graph container that will be used to place the graph -->
+
+    <!-- Create a div where the graph will take place -->
+    <div id="graphContainer">
+      <div id="my_dataviz"></div>
+      <div id="datavizCopy">
+        <div class="tableCountry">
+          <p>Country</p>
+          <p>Lorem</p>
+          <p>Ipsum</p>
+          <p>Dolor</p>
+        </div>
+      </div>
+    </div>
+    <svg id="xAxisDiv" style="width: 100%">
+    </svg>
 
     <!-- Create a tooltip that will appear on the hover of certain elements -->
-  <div id="tooltip" class="tooltip">
-  </div>
+    <div id="tooltip" class="tooltip">
+    </div>
   </div>
 
-  <script src="standardDeviation.js"></script>
+  <script type="module" src="https://testingdirectory-1.jadesign.repl.co/replit/sDeviation.js"></script>
   <!-- call forth the plotly javascript library -->
 
   <!--

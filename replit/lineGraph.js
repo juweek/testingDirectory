@@ -1,3 +1,7 @@
+import { createCountryDivs, sidePanelButtonHandler } from './helperFunctions/sidePanel.js';
+import { showClicked, createSearchResults } from './helperFunctions/searchFilter.js';
+import { sortList, sortDropdownHandler } from './helperFunctions/sort.js';
+
 /*
 ------------------------
 METHOD: set the dimensions of the graph
@@ -7,102 +11,35 @@ var margin = { top: 10, right: 20, bottom: 10, left: 10 },
   width = 300 - margin.left - margin.right,
   height = 200 - margin.top - margin.bottom;
 
-let allGroup = ["Average"]
-let currentCountry = 'belgium'
 
-//create a dictionary of countries that we can use later in a dropdown selector to change the d3 graph
-let countries = {
-  "Belgium": "belgium",
-  "China": "china",
-  "India": "india",
-  "Kenya": "kenya"
-};
+//create an array of all the countries
+let countries = []
 
 /*
-------------------------------
-METHOD: create an event listener to attach to #checkbox that detects when it is checked. when it is checked, we will switch out the entries that make up the "AllGroup array"
-------------------------------
+------------------------
+METHOD: //select all the dropdowns 
+------------------------
 */
-d3.select("#checkbox").on("change", function () {
-  if (this.checked) {
-    allGroup = ["Boys", "Girls"]
-  } else {
-    allGroup = ["Average"]
-  }
-  d3.csv('https://html-css-js.jadesign.repl.co/data/' + currentCountry + ".csv").then(function (us) {
-    createChart(svg, us, allGroup);
-  })
-    .catch(function (error) {
-      console.log(error);
-    })
-});
-
-
-/*
-------------------------------
-METHOD: create a dropdown selector that calls the update method. This dropdown will redraw the d3 graph whenever a new country is selected
-------------------------------
-*/
-let dropdown = d3.select("#dropdown");
-dropdown
-  .selectAll("option")
-  .data(Object.keys(countries))
-  .enter()
-  .append("option")
-  .attr("value", function (d) {
-    return d;
-  })
-  .text(function (d) {
-    return d;
-  });
-
-dropdown.on("change", function () {
-  let selectedCountry = d3.select(this).property("value");
-  currentCountry = countries[selectedCountry]
-  d3.csv("https://html-css-js.jadesign.repl.co/data/" + currentCountry + ".csv").then(function (data) {
-    createChart(svg, data, allGroup);
-  })
-    .catch(function (error) {
-      console.log(error);
-    })
-});
-
+var sortDropdown = d3.select("#sortDropdown");
+var orderDropdown = d3.select("#orderDropdown");
+let clickedButtons = [];
 
 /*
 ------------------------
 METHOD: create the line graphs using the filters and search bars
 ------------------------
   */
-function createChart(svg, data, currentFilter) {
-
-  console.log(data)
-  //d3.select("#svganchor svg").selectAll("*").remove();
-
+function createChart(svg, data) {
+  console.log('createChart is being called')
   //set width and height to the svg parameters
   let width = svg.attr("width") - margin.right;
   let height = svg.attr("height") - margin.top - margin.bottom;
 
-  console.log(data)
-
-
-  // Reformat the data: we need an array of arrays of {x, y} tuples
-  var dataReady = allGroup.map(function (grpName) { // .map allows to do something for each element of the list
-    //go through every element in grpName and create an array of {x, y} tuples
-    return {
-      name: grpName,
-      values: data.map(function (d) {
-        return { time: d.time, value: +d[grpName] };
-      })
-    };
-  });
-
-  console.log(dataReady)
-  console.log('//////')
-
-  // A color scale: one color for each group
-  var myColor = d3.scaleOrdinal()
-    .domain(allGroup)
-    .range(d3.schemeSet2);
+  var dataReady = [{
+    name: 'Average',
+    values: data.map(d => ({ time: d.time, value: d.Average }))
+  }
+  ];
 
   var currentSVG = svg;
 
@@ -115,13 +52,13 @@ function createChart(svg, data, currentFilter) {
     .attr("class", "x-axis1")
     .attr('width', width)
     .call(d3.axisBottom(x)
-      .tickFormat(function (d) { return d.toString().replace(/,/g, ''); }) // remove commas from tick labels
+      .tickFormat(function(d) { return d.toString().replace(/,/g, ''); }) // remove commas from tick labels
       .tickValues([2001, 2006, 2011, 2016, 2021])
     );
 
   // Add Y axis
   var y = d3.scaleLinear()
-    .domain([500, 630])
+    .domain([250, 680])
     .range([height, 0])
   currentSVG.append("g")
     //translate the y axis to the left side of the graph
@@ -131,17 +68,28 @@ function createChart(svg, data, currentFilter) {
 
   // Add the lines
   var line = d3.line()
-    .x(function (d) { return x(+d.time) })
-    .y(function (d) { return y(+d.value) })
+    .x(function(d) { return x(+d.time) })
+    .y(function(d) {
+      if (d.value == 0) {
+        return y(+500)
+      }
+      //check if d.value is not a number
+      else if (isNaN(d.value)) {
+        return y(+500)
+      }
+      else {
+        return y(+d.value)
+      }
+    })
 
   currentSVG.selectAll("myLines")
     .data(dataReady)
     .enter()
     .append("path")
-    .attr("d", function (d) {
+    .attr("d", function(d) {
       return line(d.values)
     })
-    .attr("stroke", function (d) { return myColor(d.name) })
+    .attr("stroke", function(d) { return 'black' })
     .style("stroke-width", 4)
     .style("fill", "none")
 
@@ -152,64 +100,68 @@ function createChart(svg, data, currentFilter) {
     .data(dataReady)
     .enter()
     .append('g')
-    .style("fill", function (d) { return myColor(d.name) })
+    .style("fill", function(d) { return 'black' })
     // Second we need to enter in the 'values' part of this group
     .selectAll("myPoints")
-    .data(function (d) {
-      return d.values
+    .data(function(d) {
+      if (d) {
+        return d.values
+      }
+      else {
+        return 0
+      }
     })
     .enter()
     .append("circle")
-    .attr("cx", function (d) { return x(d.time) })
-    .attr("cy", function (d) { return y(d.value) })
+    .attr("cx", function(d) { return x(d.time) })
+    .attr("cy", function(d) {
+      if (d.value == 0) {
+        return y(500)
+      }
+      //check if d.value is not a number
+      else if (isNaN(d.value)) {
+        return y(500)
+      }
+      else {
+        return y(d.value)
+      }
+    })
     .attr("r", 6)
     .attr("stroke", "white")
-    .attr("data-value", function (d) { return d.value })
+    .attr("data-value", function(d) { return d.value })
 
-    //for each circle point, display a text element 
-     // Add the points
+  //for each circle point, display a text element 
+  // Add the points
   currentSVG
-  // First we need to enter in a group
-  .selectAll("myText")
-  .data(dataReady)
-  .enter()
-  .append('g')
-  // Second we need to enter in the 'values' part of this group
-  .selectAll("myPoints")
-  .data(function (d) {
-    return d.values
-  })
-  .enter()
-  //for each circle point, display a text element with the value of the point, and display a circle
-  .append("text")
-  .attr("x", function (d) { return (x(d.time) + 7) })
-  .attr("y", function (d) { return y(d.value) - 5 })
-  .text(function (d) { return d.value })
-  .attr("text-anchor", "middle")
-  .attr("font-size", "12px")
-  .attr("fill", "black")
-  .attr("class", "textLine")
-  .attr("data-value", function (d) { return d.value })
-  .attr("data-time", function (d) { return d.time })
-  .attr("data-name", function (d) { return d.name })
-  .attr("transform", "translate(0, -10)")
-
-
-
-  // Add a legend at the end of each line
-  currentSVG
-    .selectAll("myLabels")
+    // First we need to enter in a group
+    .selectAll("myText")
     .data(dataReady)
     .enter()
     .append('g')
+    // Second we need to enter in the 'values' part of this group
+    .selectAll("myPoints")
+    .data(function(d) {
+      if (d) {
+        return d.values
+      }
+      else {
+        return 0
+      }
+    })
+    .enter()
+    //for each circle point, display a text element with the value of the point, and display a circle
     .append("text")
-    .datum(function (d) { return { name: d.name, value: d.values[d.values.length - 1] }; }) // keep only the last value of each time series
-    .attr("transform", function (d) { return "translate(" + x(d.value.time) + "," + y(d.value.value) + ")"; }) // Put the text at the position of the last point
-    .attr("x", - 120) // shift the text a bit more right
-    .attr("y", - 40) // shift the text a bit higher
-    .text(function (d) { return d.name; })
-    .style("fill", function (d) { return myColor(d.name) })
-    .style("font-size", 18);
+    .attr("x", function(d) { return (x(d.time) + 7) })
+    .attr("y", function(d) { return y(d.value) - 5 })
+    .text(function(d) { return d.value })
+    .attr("text-anchor", "middle")
+    .attr("font-size", "12px")
+    .attr("fill", "black")
+    .attr("class", "textLine")
+    .attr("data-value", function(d) { return d.value })
+    .attr("data-time", function(d) { return d.time })
+    .attr("data-name", function(d) { return d.name })
+    .attr("transform", "translate(0, -10)")
 
   /*
   ------------------------------
@@ -227,11 +179,11 @@ function createChart(svg, data, currentFilter) {
     .style("padding", "5px")
 
   // Three function that change the tooltip when user hover / move / leave a cell
-  var mouseover = function (d) {
+  var mouseover = function(d) {
     tooltip.style("opacity", 1)
     d3.select(this).style("fill", "red")
   }
-  var mousemove = function (d) {
+  var mousemove = function(d) {
     //show the score in a two decimal format
     let currentScore = d3.select(this).attr("data-value")
     let roundedScore = Math.round(currentScore * 100) / 100
@@ -241,7 +193,7 @@ function createChart(svg, data, currentFilter) {
       .style("top", ((d.pageY - 40) + "px"))
   }
 
-  var mouseleave = function (d) {
+  var mouseleave = function(d) {
     tooltip
       .style("opacity", 0)
     d3.select(this).style("fill", null)
@@ -258,60 +210,241 @@ function createChart(svg, data, currentFilter) {
 }
 
 
-var masterCountryList = ['belgium', 'china', 'india', 'kenya'];
-
 async function getCountriesData() {
-  var countriesData = {};
+  var transformedData = {};
 
-  for (var i = 0; i < masterCountryList.length; i++) {
-    var country = masterCountryList[i];
+  d3.csv("https://html-css-js.jadesign.repl.co/data/averageAchievement.csv", function(error, data) {
+    var globalDataSet
+    globalDataSet
+    if (error) throw error;
 
-    // Get the data for the current country
-    var data = await d3.csv('https://html-css-js.jadesign.repl.co/data/' + country + '.csv');
-    countriesData[country] = data;
-  }
-  console.log(countriesData)
-  return countriesData;
+    // remove the first header "Country"
+    var headers = Object.keys(data[0]);
+    headers.shift();
+
+    // transform the data
+    data.forEach(function(row) {
+      var country = row["Country"];
+      transformedData[country] = [];
+      headers.forEach(function(header, index) {
+        transformedData[country].push({ time: header, Average: row[header] });
+      });
+    });
+    globalDataSet = transformedData
+
+    //push the lowercase version of the country into the array
+    data.forEach(country => {
+      countries.push(country.Country.toLowerCase())
+    })
+
+    /*
+------------------------
+METHOD: create the dropdowns that determine if we will sort or search
+------------------------
+*/
+    d3.selectAll(".dropdownMenu").on("change", function() {
+      let newData = sortDropdownHandler(orderDropdown, globalDataSet, svg)
+      //globalDataSet = newData
+      // For each country, create a chart and display it
+      for (var country in transformedData) {
+        var data = transformedData[country];
+        var chart = d3.select('#svganchor').append('div')
+          .attr('class', 'chart')
+          .attr('id', country + '-chart');
+        var chartSVG = chart.append('svg')
+          //set width to just half the width of the window
+          .attr('width', 240)
+          .attr('height', 200);
+
+        // Give each chart a title before the chart
+        chart.append('div')
+          .attr('class', 'chartTitleBackground')
+          .append('h3')
+          .attr('class', 'chartTitle')
+          .text(country);
+
+        createChart(chartSVG, data);
+      }
+      createCountryDivs(newData);
+    })
+
+    // For each country, create a chart and display it
+    console.log(transformedData)
+    for (var country in transformedData) {
+      var data = transformedData[country];
+      var chart = d3.select('#svganchor').append('div')
+        .attr('class', 'chart')
+        .attr('id', country + '-chart');
+      var chartSVG = chart.append('svg')
+        //set width to just half the width of the window
+        .attr('width', 240)
+        .attr('height', 200);
+
+      // Give each chart a title before the chart
+      chart.append('div')
+        .attr('class', 'chartTitleBackground')
+        .append('h3')
+        .attr('class', 'chartTitle')
+        .text(country);
+
+      createChart(chartSVG, data);
+    }
+
+
+
+    // Get references to the search input and the results dropdown
+    const searchInput = document.querySelector('#searchBarSelector');
+    const resultsDropdown = document.querySelector('#resultsSelector');
+    let currentClickedButtons = [];
+
+    // Add an event listener to the search input that filters the results whenever the input value changes
+    searchInput.addEventListener('input', event => {
+      const inputValue = event.target.value;
+      createSearchResults(data, inputValue, countries, resultsDropdown);
+
+      /*
+      ------------------------
+      SEARCH RESULTS BUTTONS: Select all buttons in the searchResults area. attach a click event listener to each button so, when clicked, it adds the country to the currentlySelectedCountries section, then redraws the chart
+      ------------------------
+      */
+      const searchResultsButtons = d3.selectAll('.resultButton');
+      searchResultsButtons.on('click', function() {
+        let currentlySelectedCountriesDataset = []
+        let button = d3.select(this);
+
+        currentClickedButtons.push(button._groups[0][0].innerHTML);
+        button.classed("resultButtonSelected", true);
+
+        // For each country in currentClickedButtons, go through the data array and find the entry where its Country property matches country
+        currentClickedButtons.forEach(function(country) {
+          //let index = data.findIndex(d => d.Country === country);
+          let index = transformedData[country]
+          currentlySelectedCountriesDataset.push(index)
+        })
+
+        //call the function to filter the buttons that have been clicked, then call the createChart function
+        showClicked(currentClickedButtons, data);
+
+        //clear out the current svg
+        let svgContainer = d3.select('#svganchor');
+        svgContainer.selectAll('*').remove();
+
+        for (var country in currentlySelectedCountriesDataset) {
+          var data = currentlySelectedCountriesDataset[country];
+          var chart = d3.select('#svganchor').append('div')
+            .attr('class', 'chart')
+            .attr('id', country + '-chart');
+          var chartSVG = chart.append('svg')
+            //set width to just half the width of the window
+            .attr('width', 240)
+            .attr('height', 200);
+
+          // Give each chart a title before the chart
+          chart.append('div')
+            .attr('class', 'chartTitleBackground')
+            .append('h3')
+            .attr('class', 'chartTitle')
+            .text(country);
+
+          //call the function to create the chart
+          createChart(chartSVG, data);
+        }
+        globalDataSet = currentlySelectedCountriesDataset;
+        /*
+         ------------------------
+         SELECTED COUNTRIES BUTTONS: Select all buttons in the selectedCountries area. attach a click event listener to each button so, when clicked, it removes the country from the currentlySelectedCountries section, then redraws the chart
+         ------------------------
+         */
+        const selectedResultsButtons = d3.selectAll('.selectedCountry');
+        selectedResultsButtons.on('click', function() {
+
+          //clear out the current svg
+          let svgContainer = d3.select('#svganchor');
+          svgContainer.selectAll('*').remove();
+
+          //get the name of the current button clicked
+          let currentCountryButton = d3.select(this);
+          let currentCountryButtonName = currentCountryButton._groups[0][0].innerHTML;
+
+          // Remove the currently selected country from the currentClickedButtons list
+          let index = currentClickedButtons.indexOf(currentCountryButtonName);
+          if (index > -1) {
+            currentClickedButtons.splice(index, 1);
+          }
+
+          //Remove the country that was clicked from the currentlySelectedCountriesDataset 
+          let currentlySelectedCountriesDataset = [];
+          currentClickedButtons.forEach(function(country) {
+            let index = transformedData[country]
+            currentlySelectedCountriesDataset.push(index)
+          })
+
+          //Remove the currently selected country from the currentlySelectedCountries section
+          const selectedElements = document.querySelectorAll('.selectedCountry');
+          selectedElements.forEach(element => {
+            if (element.id.includes(currentCountryButtonName)) {
+              element.remove();
+            }
+          });
+
+          //remove '.resultButtonSelected' class from the button in the results div'
+          let searchBarResults = document.querySelectorAll('.resultButton');
+          for (let i = 0; i < searchBarResults.length; i++) {
+            if (searchBarResults[i].id == currentCountryButtonName) {
+              searchBarResults[i].classList.remove('resultButtonSelected');
+            }
+          }
+
+          //if currentlySelectedCountries is empty, redraw createChart with the data from the data array
+          if (currentlySelectedCountriesDataset.length != 0) {
+            //createChart(svg, currentlySelectedCountriesDataset);
+            for (var country in currentlySelectedCountriesDataset) {
+              var data = currentlySelectedCountriesDataset[country];
+              var chart = d3.select('#svganchor').append('div')
+                .attr('class', 'chart')
+                .attr('id', country + '-chart');
+              var chartSVG = chart.append('svg')
+                //set width to just half the width of the window
+                .attr('width', 240)
+                .attr('height', 200);
+
+              // Give each chart a title before the chart
+              chart.append('div')
+                .attr('class', 'chartTitleBackground')
+                .append('h3')
+                .attr('class', 'chartTitle')
+                .text(country);
+
+              //call the function to create the chart
+              createChart(chartSVG, data);
+            }
+            globalDataSet = currentlySelectedCountriesDataset;
+          } else {
+            for (var country in transformedData) {
+              var data = transformedData[country];
+              var chart = d3.select('#svganchor').append('div')
+                .attr('class', 'chart')
+                .attr('id', country + '-chart');
+              var chartSVG = chart.append('svg')
+                //set width to just half the width of the window
+                .attr('width', 240)
+                .attr('height', 200);
+
+              // Give each chart a title before the chart
+              chart.append('div')
+                .attr('class', 'chartTitleBackground')
+                .append('h3')
+                .attr('class', 'chartTitle')
+                .text(country);
+
+              //call the function to create the chart
+              createChart(chartSVG, data);
+            }
+            globalDataSet = data;
+          }
+        })
+      })
+    })
+  })
 }
-
-getCountriesData().then(function (countriesData) {
-  for (var country in countriesData) {
-    var data = countriesData[country];
-    var chart = d3.select('#svganchor').append('div')
-      .attr('class', 'chart')
-      .attr('id', country + '-chart');
-    var chartSVG = chart.append('svg')
-      //set width to just half the width of the window
-      .attr('width', 360)
-      .attr('height', 300);
-
-    //give each chart a title before the chart
-
-    chart.append('div')
-      .attr('class', 'chartTitleBackground')
-      .append('h3')
-      .attr('class', 'chartTitle')
-      .text(country);
-
-
-      console.log('loading createChart')
-      console.log(data)
-
-    createChart(chartSVG, data, ['Average']);
-  }
-});
-
-
-/*
-
-      //give each chart an x and y axis
-      chart.append('g')
-        .attr('class', 'x-axis')
-        .attr('transform', 'translate(0, 300)')
-        .call(d3.axisBottom(xScale));
-      chartSVG.append('g')
-        .attr('class', 'y-axis')
-        .attr('transform', 'translate(50, 0)')
-        .call(d3.axisLeft(yScale));
-
-        */
+getCountriesData();

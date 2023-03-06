@@ -7,7 +7,6 @@ var margin = { top: 10, right: 30, bottom: 0, left: 140 },
   width = 760 - margin.left - margin.right,
   height = 1500 - margin.top - margin.bottom;
 
- var globalDataSet = [];
 var masterDataSet = [];
 /*
 ------------------------
@@ -25,14 +24,13 @@ var svg = d3.select("#my_dataviz")
 //select xAxisDiv element from the html page
 var xAxisDiv = d3.select("#xAxisDiv");
 
-
 /*
 ------------------------
 METHOD: create an event handler and listener for the search bar. this event handler will take in the string read in by the search and will rewrite the d3 function to filter out all the entrries that do not contain the string
 ------------------------
 */
 var searchBar = d3.select("#searchBar");
-searchBar.on("input", function () {
+searchBar.on("input", function() {
 })
 
 /*
@@ -54,7 +52,6 @@ function toTitleCase(str) {
   return str.replace(/\b[a-z]/g, char => char.toUpperCase());
 }
 
-
 /*
 ------------------------
 METHOD: show all of the clicked buttons in a div
@@ -69,11 +66,11 @@ function showClicked(currentClickedButtons, data) {
     .data(currentClickedButtons)
     .enter()
     .append("div")
-    .text(function (d) {
+    .text(function(d) {
       //get the name of the country from d
       return d;
     })
-    .on("click", function (d) {
+    .on("click", function(d) {
       //remove the current clicked button from the list
       let index = clickedButtons.indexOf(d);
       if (index > -1) {
@@ -147,8 +144,8 @@ function createChart(svg, data) {
 
   // Create a new x-axis element
   var x = d3.scaleLinear()
-  .domain([100, 800])
-  .range([0, width - 120]);
+    .domain([100, 800])
+    .range([0, width - 120]);
 
   // Append the second x-axis to the div element with id "xAxisDiv". make sure it matches the x and y of the first x-axis
   var xAxis2 = d3.axisBottom(x);
@@ -158,33 +155,33 @@ function createChart(svg, data) {
     .call(xAxis2);
 
   //create a loop that creates a vertical zebra background for the chart that alternates between grey and white every 10  points on the x axis
-    var zebra = 0;
-    for (var i = 200; i < 800; i++) {
-      if (zebra == 0) { 
-        svg.append("rect")
-          .attr("x", x(i))
-          .attr("y", 0)
-          .attr("width", x(200))
-          .attr("height", height)
-          .attr("fill", "#f2f2f2");
-        zebra = 1;
-      }
-      else {
-        svg.append("rect")
-          .attr("x", x(i))
-          .attr("y", 0)
-          .attr("width", x(200))
-          .attr("height", height)
-          .attr("fill", "#ffffff");
-        zebra = 0;
-      }
-      i = i + 99;
+  var zebra = 0;
+  for (var i = 200; i < 800; i++) {
+    if (zebra == 0) {
+      svg.append("rect")
+        .attr("x", x(i))
+        .attr("y", 0)
+        .attr("width", x(200))
+        .attr("height", height)
+        .attr("fill", "#f2f2f2");
+      zebra = 1;
     }
+    else {
+      svg.append("rect")
+        .attr("x", x(i))
+        .attr("y", 0)
+        .attr("width", x(200))
+        .attr("height", height)
+        .attr("fill", "#ffffff");
+      zebra = 0;
+    }
+    i = i + 99;
+  }
 
   // Y axis
   var y = d3.scaleBand()
     .range([0, height])
-    .domain(data.map(function (d) { return d.Country; }))
+    .domain(data.map(function(d) { return d.Country; }))
     .padding(1);
   svg.append("g")
     .attr("id", "yAxis")
@@ -203,13 +200,13 @@ function createChart(svg, data) {
     .enter()
     .append("rect")
     //the x will be the start of the rectangle
-    .attr("x", function (d) {
+    .attr("x", function(d) {
       return x(d.fifth_percentile);
     })
-    .attr("y", function (d) { return y(d.Country); })
+    .attr("y", function(d) { return y(d.Country); })
     //the width will be the total distribution of scores
     .attr("class", "firstRect")
-    .attr("width", function (d) {
+    .attr("width", function(d) {
       let fifth = x(d.fifth_percentile)
       let nintey_fifth = x(d.nintey_fifth)
       return (nintey_fifth - fifth) + 20
@@ -218,7 +215,7 @@ function createChart(svg, data) {
     .attr("z-index", 1)
     .attr("stroke", "black")
     .style("fill", "#E85955")
-    .on("mouseenter", function (d) {
+    .on("mouseenter", function(d) {
       let currentCountry = d.Country
       let currentLow = d.fifth_percentile
       let currentIntermediate = d.nintey_fifth
@@ -249,10 +246,10 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("rect")
-    .attr("x", function (d) { return x(d.twenty_fifth); })
-    .attr("y", function (d) { return y(d.Country); })
+    .attr("x", function(d) { return x(d.twenty_fifth); })
+    .attr("y", function(d) { return y(d.Country); })
     .attr("class", "secondRect")
-    .attr("width", function (d) {
+    .attr("width", function(d) {
       let twentyFifth = x(d.twenty_fifth)
       let seventy_fifth = x(d.seventy_fifth)
       return (seventy_fifth - twentyFifth) + 20
@@ -271,9 +268,9 @@ function createChart(svg, data) {
     .data(data)
     .enter()
     .append("rect")
-    .attr("x", function (d) { return x(d.nintey_fifth_confidence); })
-    .attr("y", function (d) { return y(d.Country); })
-    .attr("width", function (d) {
+    .attr("x", function(d) { return x(d.nintey_fifth_confidence); })
+    .attr("y", function(d) { return y(d.Country); })
+    .attr("width", function(d) {
       let fifth = x(d.seventy_fifth)
       let twenthyFifth = x(d.nintey_fifth)
       return 3
@@ -286,7 +283,7 @@ function createChart(svg, data) {
 
   let dataChart = d3.select("#my_dataviz")
 
-  dataChart.on("mouseleave", function () {
+  dataChart.on("mouseleave", function() {
     //remove 'active' from all line elements
     let tooltip = d3.select("#tooltip");
     tooltip.style("display", "none");
@@ -298,8 +295,9 @@ function createChart(svg, data) {
 METHOD: read in the data and create the axes
 ------------------------
 */
-d3.csv("https://html-css-js.jadesign.repl.co/data/standardDeviation2.csv", function (data) {
+d3.csv("https://html-css-js.jadesign.repl.co/data/standardDeviation2.csv", function(data) {
   var currentDataSet = data
+  var globalDataSet = [];
   globalDataSet = data
   masterDataSet = data
   // Add X axis
@@ -321,7 +319,7 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/standardDeviation2.csv", funct
   METHOD: create the dropdowns that determine if we will sort or search
   ------------------------
   */
-  d3.selectAll(".dropdownMenu").on("change", function () {
+  d3.selectAll(".dropdownMenu").on("change", function() {
     let value = sortDropdown.property("value")
     let newData = []
     //first, check if the orderDropdown is set to asc or desc
@@ -344,7 +342,7 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/standardDeviation2.csv", funct
 METHOD: create the search bar that will take in the string and filter out all the countries that don't include it
 ------------------------
 */
-  d3.selectAll("#searchBar").on("keyup", function () {
+  d3.selectAll("#searchBar").on("keyup", function() {
     let value = searchBar.property("value")
     let newData = []
     newData = data.filter(country => country.Country.toLowerCase().includes(value.toLowerCase()));
@@ -404,7 +402,7 @@ METHOD: create the search bar that will take in the string and filter out all th
     const buttons = d3.selectAll('.resultButton');
 
     // Attach a click event listener to each button
-    buttons.on('click', function () {
+    buttons.on('click', function() {
       let button = d3.select(this);
       //print out the innerhtml or the country name of the button
       clickedButtons.push(button._groups[0][0].innerHTML);

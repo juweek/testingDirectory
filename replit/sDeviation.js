@@ -1,16 +1,15 @@
 import { createCountryDivs, sidePanelButtonHandler } from './helperFunctions/sidePanel.js';
 import { showClicked, createSearchResults } from './helperFunctions/searchFilter.js';
 import { sortList, sortDropdownHandler } from './helperFunctions/sort.js';
-import { toTitleCase } from './helperFunctions/random.js';
 
 /*
 ------------------------
 METHOD: set the dimensions of the graph
 ------------------------
 */
-var margin = { top: 10, right: 100, bottom: 0, left: 140 },
-  width = 740 - margin.left - margin.right,
-  height = 900 - margin.top - margin.bottom;
+var margin = { top: 10, right: 30, bottom: 0, left: 140 },
+  width = 760 - margin.left - margin.right,
+  height = 1050 - margin.top - margin.bottom;
 
 /*
 ------------------------
@@ -42,7 +41,7 @@ METHOD: create the d3 chart. set the y axis to the countries
 ------------------------
 */
 function createChart(svg, data) {
-  console.log(data)
+
   //clear out the svg,  set the height relative to the length of the data
   var width = svg.attr("width")
   var height = data.length * 20;
@@ -54,8 +53,8 @@ function createChart(svg, data) {
 
   // Create a new x-axis element
   var x = d3.scaleLinear()
-    .domain([0, 100])
-    .range([0, width - 150]);
+    .domain([100, 800])
+    .range([0, width - 120]);
 
   // Append the second x-axis to the div element with id "xAxisDiv". make sure it matches the x and y of the first x-axis
   var xAxis2 = d3.axisBottom(x);
@@ -70,17 +69,19 @@ function createChart(svg, data) {
     .domain(data.map(function(d) { return d.Country; }))
     .padding(1);
   svg.append("g")
+    .attr("id", "yAxis")
     .call(d3.axisLeft(y))
     .selectAll("text")
     .style("text-anchor", "end")
+    .attr('class', 'yAxisText')
 
   //create a loop that creates a vertical zebra background for the chart that alternates between grey and white every 10 points on the x axis
   var zebra = 0;
-  for (var i = 0; i < 100; i++) {
+  for (var i = 200; i < 800; i++) {
     svg.append("rect")
       .attr("x", x(i))
       .attr("y", 0)
-      .attr("width", x(10))
+      .attr("width", x(200))
       .attr("height", height)
       .attr("fill", function() {
         if (zebra == 0) {
@@ -91,97 +92,101 @@ function createChart(svg, data) {
           return "#ffffff";
         }
       });
-    i = i + 9;
+    i = i + 99;
   }
 
-  //give each line a tooltip
-  svg.selectAll("myline")
+  /*
+  ------------------------
+  METHOD: draw the first rectangle used to show the 5th and 95th percentile. this will be the green rectangle that is the total distribution of scores
+  ------------------------
+  */
+  svg.selectAll("mycircle")
     .data(data)
     .enter()
-    .append("line")
-    .attr("x1", function(d) { return x(d.advanced); })
-    .attr("x2", function(d) { return x(d.low); })
-    .attr("y1", function(d) { return y(d.Country); })
-    .attr("y2", function(d) { return y(d.Country); })
-    .attr("class", "lineChartElement")
-    .attr("stroke", "grey")
-    .attr("stroke-width", "1.4px")
+    .append("rect")
+    //the x will be the start of the rectangle
+    .attr("x", function(d) {
+      return x(d.fifth_percentile);
+    })
+    .attr("y", function(d) { return y(d.Country); })
+    //the width will be the total distribution of scores
+    .attr("class", "firstRect")
+    .attr("width", function(d) {
+      let fifth = x(d.fifth_percentile)
+      let nintey_fifth = x(d.nintey_fifth)
+      return (nintey_fifth - fifth) + 20
+    })
+    .attr("height", 14)
+    .attr("z-index", 1)
+    .attr("stroke", "black")
+    .style("fill", "#E85955")
     .on("mouseenter", function(d) {
       let currentCountry = d.Country
-      let currentLow = d.low
-      let currentIntermediate = d.intermediate
-      let currentAdvanced = d.advanced
-      let currentHigh = d.high
+      let currentLow = d.fifth_percentile
+      let currentIntermediate = d.nintey_fifth
       let tooltip = d3.select("#tooltip");
       tooltip.style("display", "block");
       //set the text of html to a summary of the data points
       tooltip.html(`<h3>${currentCountry}</h3>
             <p>Percentage reaching low score: ${currentLow}%</p>
-            <p>Percentage reaching intermediate score: ${currentIntermediate}%</p>
-            <p>Percentage reaching advanced score: ${currentAdvanced}%</p>
-            <p>Percentage reaching high score: ${currentHigh}%</p>`)
+            <p>Percentage reaching intermediate score: ${currentIntermediate}%</p>`)
       tooltip.style("left", (d3.event.pageX + 10) + "px")
       tooltip.style("top", (d3.event.pageY - 40) + "px")
       tooltip.style("opacity", 1);
-      //remove 'active' from all line elements, then add 'active' to the current line element not using classed
-      svg.selectAll(".lineChartElement").classed("active", false);
-      let currentLine = event.target;
-      currentLine.classList.add("active");
-    })
-    .on("mouseleave", function() {
       //remove 'active' from all line elements
       svg.selectAll(".lineChartElement").classed("active", false);
+      //add 'active' to the current line element not using classed
+      let currentLine = event.target;
+      currentLine.classList.add("active");
+      // do something when the mouse enters the line
     })
 
-  // Circles of variable 1
+
+  /*
+  ------------------------
+  METHOD: draw the second rectangle used to show the 25th and 90th percentile
+  ------------------------
+  */
   svg.selectAll("mycircle")
     .data(data)
     .enter()
-    .append("circle")
-    .attr("cx", function(d) { return x(d.advanced); })
-    .attr("cy", function(d) { return y(d.Country); })
-    .attr("r", "6")
-    .style("fill", "#010101")
+    .append("rect")
+    .attr("x", function(d) { return x(d.twenty_fifth); })
+    .attr("y", function(d) { return y(d.Country); })
+    .attr("class", "secondRect")
+    .attr("width", function(d) {
+      let twentyFifth = x(d.twenty_fifth)
+      let seventy_fifth = x(d.seventy_fifth)
+      return (seventy_fifth - twentyFifth) + 20
+    })
+    .attr("height", 14)
+    .attr("z-index", 2)
+    .attr("stroke", "black")
+    .style("fill", "#F6C7BC")
 
-  // Circles of the high variable
+  /*
+  ------------------------
+  METHOD: draw the third rectangle used to show the 75th and 95th percentile
+  ------------------------
+  */
   svg.selectAll("mycircle")
     .data(data)
     .enter()
-    .append("circle")
-    .attr("cx", function(d) { return x(d.high); })
-    .attr("cy", function(d) { return y(d.Country); })
-    .attr("r", "6")
-    .style("fill", "#ffffff")
-    .attr("stroke", "#010101")
-    .attr("stroke-width", "1.4px")
+    .append("rect")
+    .attr("x", function(d) { return x(d.nintey_fifth_confidence); })
+    .attr("y", function(d) { return y(d.Country); })
+    .attr("width", function(d) {
+      let fifth = x(d.seventy_fifth)
+      let twenthyFifth = x(d.nintey_fifth)
+      return 3
+    })
+    .attr("height", 14)
+    .attr("z-index", 4)
+    .attr("stroke", "black")
+    .style("fill", "black")
 
-  // Circles of the intermediate variable
-  svg.selectAll("mycircle")
-    .data(data)
-    .enter()
-    .append("circle")
-    .attr("cx", function(d) { return x(d.intermediate); })
-    .attr("cy", function(d) { return y(d.Country); })
-    .attr("r", "6")
-    .style("fill", "#E85A56")
 
-  // Circles of the low variable
-  svg.selectAll("mycircle")
-    .data(data)
-    .enter()
-    .append("circle")
-    .attr("cx", function(d) { return x(d.low); })
-    .attr("cy", function(d) { return y(d.Country); })
-    .attr("r", "6")
-    .style("fill", "#F2A9A4")
-
-  //change the height of dataChart to match the height of the svg
   let dataChart = d3.select("#my_dataviz")
-  var holderSVG = d3.select("#my_dataviz").select("svg");
-  dataChart.attr("height", height)
-  dataChart.style("overflow", "scroll-x")
-  holderSVG.attr("height", height + 10);
-  holderSVG.attr("width", width);
 
   dataChart.on("mouseleave", function() {
     //remove 'active' from all line elements
@@ -219,13 +224,20 @@ sidePanelButtonHandler('sidePanelButton', 'datavizCopy')
 METHOD: read in the data and create the axes
 ------------------------
 */
-d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(data) {
+d3.csv("https://html-css-js.jadesign.repl.co/data/standardDeviation2.csv", function(data) {
   var globalDataSet = [];
   globalDataSet = data
   // Add X axis
   var x = d3.scaleLinear()
-    .domain([0, 100])
+    .domain([100, 800])
     .range([0, width]);
+  var xAxis2 = d3.axisBottom(x);
+
+  d3.select("#xAxisDiv")
+    .append("g")
+    .attr("id", "xAxis2")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis2);
 
   /*
   ------------------------
@@ -346,12 +358,12 @@ d3.csv("https://html-css-js.jadesign.repl.co/data/percentages.csv", function(dat
   */
   function reportWindowSize() {
     if (window.innerWidth > 768) {
-      width = 740;
-      height = 900;
+      width = 760;
+      height = 1050;
     }
     else {
       width = window.innerWidth - 60;
-      height = 900;
+      height = 1050;
     }
     //set the new width and height of the svg, set the new width and height of the x-axis
     svg.attr("width", width)

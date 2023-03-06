@@ -42,12 +42,14 @@ input, select {
     min-height: 40px;
     max-height: 40px;
     padding: 5px 10px;
-    border-radius: 3px;
     margin-bottom: 10px;
     margin-right: 10px;
     background-color: #EFEFEF;
     color:#AA412F;
     margin-top: 6px;
+    border-radius: 100px;
+    border: 1px solid #000;
+  
 }
 
 ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
@@ -73,8 +75,10 @@ input, select {
     width: 360px;
     height: 30px;
     padding: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #000000;
+    border-radius: 200px;
     margin-bottom: 0px;
+    padding-left: 10px;
   }
   
   /* Results dropdown */
@@ -133,3 +137,7 @@ input, select {
   .resultButton.hidden {
     display: none;
   }
+
+.formsContainer {
+  margin-bottom: 20px;
+}
